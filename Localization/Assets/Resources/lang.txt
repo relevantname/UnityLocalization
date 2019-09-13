@@ -1,0 +1,1 @@
+[{"Text":"Welcome","Translations":[{"LanguageCode":"EN","Translation":"Welcome"},{"LanguageCode":"TR","Translation":"Merhaba"}]},{"Text":"Select","Translations":[{"LanguageCode":"EN","Translation":"Select"},{"LanguageCode":"TR","Translation":"Seç"}]}]

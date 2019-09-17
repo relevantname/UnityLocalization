@@ -19,9 +19,19 @@ public class LocalizationEditor : EditorWindow
 
     #region Language Codes Section Properties
     private Rect languageCodesRect;
-
     private List<string> languageCodes;
-    private ReorderableList languageCodesList;
+    private string languageCodeToAdd = "";
+    private string languageCodeToRemove = "";
+    private Vector2 scrollPos;
+    int selectedIndex = -1;
+    #endregion
+
+    #region Translation Panel Section
+    private Rect translationPanelRect;
+    #endregion
+
+    #region LocalizationEditor Buttons Section Properties(Save, Load, Clear)
+    private Rect localizationEditorButtonsRect;
     #endregion
 
     public List<TextTranslationsPair> translations;
@@ -42,23 +52,8 @@ public class LocalizationEditor : EditorWindow
         DrawLayouts();
         HeaderSectionContent();
         LanguageCodesSectionContent();
-
-        if (translations != null)
-        {
-            SerializedObject serializedObject = new SerializedObject(this);
-            SerializedProperty serializedProperty = serializedObject.FindProperty("translations");
-            EditorGUILayout.PropertyField(serializedProperty, true);
-            serializedObject.ApplyModifiedProperties();
-
-            if (GUILayout.Button("Save Translations"))
-                Save();
-        }
-
-        if (GUILayout.Button("Load Translations"))
-            Load();
-
-        if (GUILayout.Button("Clear Translations"))
-            CreateNewTranslation();
+        TranslationsPanelSectionContent();
+        LocalizationEditorButtonsSectionContent();
     }
 
     void OnEnable()
@@ -96,9 +91,23 @@ public class LocalizationEditor : EditorWindow
 
         #region Language Codes Section
         languageCodesRect.x = 0;
-        languageCodesRect.y = headerRect.height;
+        languageCodesRect.y = headerRect.height + 5;
         languageCodesRect.width = Screen.width;
-        languageCodesRect.height = 100;
+        languageCodesRect.height = 200;
+        #endregion
+
+        #region Translations Panel Section
+        translationPanelRect.x = 0;
+        translationPanelRect.y = headerRect.height + languageCodesRect.height + 5;
+        translationPanelRect.width = Screen.width;
+        translationPanelRect.height = 500;
+        #endregion
+
+        #region Localization Editor Buttons Section
+        localizationEditorButtonsRect.x = 0;
+        localizationEditorButtonsRect.y = headerRect.height + languageCodesRect.height + translationPanelRect.height;
+        localizationEditorButtonsRect.width = Screen.width;
+        localizationEditorButtonsRect.height = 100;
         #endregion
     }
 
@@ -122,21 +131,158 @@ public class LocalizationEditor : EditorWindow
     private void LanguageCodesSectionContent()
     {
         GUILayout.BeginArea(languageCodesRect);
+
+        GUILayout.BeginVertical();
+
         GUIStyle languageCodesGUIStyle = new GUIStyle();
         languageCodesGUIStyle.alignment = TextAnchor.UpperLeft;
         languageCodesGUIStyle.fontStyle = FontStyle.Italic;
         languageCodesGUIStyle.normal.textColor = Color.white;
         EditorGUI.LabelField(new Rect(10,10, 0,0), "Add/Remove Language Codes", languageCodesGUIStyle);
 
-        languageCodesList = new ReorderableList(languageCodes, typeof(string), false, true, false, true);
-        languageCodesList.drawHeaderCallback = (rect) => EditorGUI.LabelField(rect, "Language Codes");
-        //languageCodesList.DoList(new Rect(10, 25, 150, 150));  
-        languageCodesList.DoLayoutList();
+        GUILayout.Space(30);
+
+        scrollPos = EditorGUILayout.BeginScrollView(scrollPos, GUILayout.Width(Screen.width-10), GUILayout.Height(150));
+
+        Color color_default = GUI.backgroundColor;
+        Color color_selected = Color.grey;
+
+        GUIStyle itemStyle = new GUIStyle(GUI.skin.button);  //make a new GUIStyle
+
+        itemStyle.alignment = TextAnchor.MiddleLeft; //align text to the left
+        itemStyle.active.background = itemStyle.normal.background;  //gets rid of button click background style.
+        itemStyle.margin = new RectOffset(0, 0, 0, 0); //removes the space between items (previously there was a small gap between GUI which made it harder to select a desired item)
+        
+        for (int i = 0; i < languageCodes.Count; i++)
+        {
+            GUI.backgroundColor = (selectedIndex == i) ? color_selected : Color.clear;
+
+            //show a button using the new GUIStyle
+            if (GUILayout.Button(languageCodes[i], itemStyle))
+            {
+                selectedIndex = i;
+                languageCodeToRemove = languageCodes[i];
+            }
+
+            GUI.backgroundColor = color_default;
+        }
+
+        EditorGUILayout.EndScrollView();
+
+        GUILayout.Space(5);
+
+        EditorGUILayout.BeginHorizontal();
+
+        languageCodeToAdd = EditorGUILayout.TextField("Language Code To Add:", languageCodeToAdd);
+        if (GUILayout.Button("Add Language Code"))
+            AddNewLanguageCode();
+
+        if (GUILayout.Button("Remove Language Code"))
+            RemoveLanguageCode();
+
+        EditorGUILayout.EndHorizontal();
+
+        GUILayout.EndVertical();
+
+        GUILayout.Space(5);
+
         GUILayout.EndArea();
+    }
+
+    /// <summary>
+    /// Panel For Adding/Removing Translation Texts and Editing Translations
+    /// </summary>
+    private void TranslationsPanelSectionContent()
+    {
+        GUILayout.BeginArea(translationPanelRect);
+
+        GUILayout.BeginVertical();
+        
+        GUIStyle translationPanelGUIStyle = new GUIStyle();
+        translationPanelGUIStyle.alignment = TextAnchor.UpperLeft;
+        translationPanelGUIStyle.fontStyle = FontStyle.Italic;
+        translationPanelGUIStyle.normal.textColor = Color.white;
+        EditorGUI.LabelField(new Rect(10, 10, 0, 0), "Manage Translations", translationPanelGUIStyle);
+
+        GUILayout.Space(30);
+
+        SerializedObject serializedObject = new SerializedObject(this);
+        SerializedProperty serializedProperty = serializedObject.FindProperty("translations");
+        EditorGUILayout.PropertyField(serializedProperty, true);
+        serializedObject.ApplyModifiedProperties();
+
+        GUILayout.EndVertical();
+          
+        GUILayout.EndArea();
+    }
+
+    /// <summary>
+    /// Creation of GUI Editor Content of LocalizationEditorButtonsSection
+    /// </summary>
+    private void LocalizationEditorButtonsSectionContent()
+    {
+        GUILayout.BeginArea(localizationEditorButtonsRect);
+        
+        if (GUILayout.Button("Save Translations"))
+            Save();
+
+        if (GUILayout.Button("Load Translations"))
+            Load();
+
+        if (GUILayout.Button("Clear Translations"))
+            CreateNewTranslation();
+
+        GUILayout.EndArea();
+    }
+
+    private void AddNewLanguageCode()
+    {
+        if (languageCodeToAdd.Length <= 0)
+            return;
+
+        if (languageCodes.Contains(languageCodeToAdd))
+            return;
+
+        for(int i=0; i < translations.Count; i++)
+        {
+            LanguageCodeTranslationPair newLangTranslationPair = new LanguageCodeTranslationPair();
+            newLangTranslationPair.LanguageCode = languageCodeToAdd;
+            translations[i].Translations.Add(newLangTranslationPair);
+        }
+
+        languageCodes.Add(languageCodeToAdd);
+        languageCodeToAdd = "";
+    }
+
+    private void RemoveLanguageCode()
+    {
+        if (languageCodeToRemove.Length <= 0)
+            return;
+
+        if (!languageCodes.Contains(languageCodeToRemove))
+            return;
+
+        for (int i = 0; i < translations.Count; i++)
+        {
+            for(int j=translations[i].Translations.Count-1; j>=0; j--)
+            {
+                if(translations[i].Translations[j].LanguageCode == languageCodeToRemove)
+                {
+                    translations[i].Translations.RemoveAt(j);
+                    break;
+                }
+            }
+        }
+
+        languageCodes.Remove(languageCodeToRemove);
+        languageCodeToRemove = "";
     }
 
     private void Save()
     {
+        if (translations == null)
+            return;
+
         string savePath = EditorUtility.SaveFilePanel("Save", "", "lang", ".txt");
 
         if (string.IsNullOrEmpty(savePath))

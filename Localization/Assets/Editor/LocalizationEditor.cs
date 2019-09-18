@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEditor;
 using Newtonsoft.Json;
 using UnityEditorInternal;
+using UnityEditor.AnimatedValues;
 
 public class LocalizationEditor : EditorWindow
 {
@@ -28,12 +29,18 @@ public class LocalizationEditor : EditorWindow
 
     #region Translation Panel Section
     private Rect translationPanelRect;
+    private ReorderableList reordarableList_Translations;
+
+    private AnimBool animBool;
+    private bool show;
     #endregion
 
     #region LocalizationEditor Buttons Section Properties(Save, Load, Clear)
     private Rect localizationEditorButtonsRect;
     #endregion
 
+    SerializedObject serializedObject;
+    SerializedProperty serializedProperty;
     public List<TextTranslationsPair> translations;
 
     /// <summary>
@@ -47,6 +54,9 @@ public class LocalizationEditor : EditorWindow
         window.Show();
     }
 
+    /// <summary>
+    /// Draws All GUI Elements inside Editor Window
+    /// </summary>
     private void OnGUI()
     {
         DrawLayouts();
@@ -56,7 +66,12 @@ public class LocalizationEditor : EditorWindow
         LocalizationEditorButtonsSectionContent();
     }
 
-    void OnEnable()
+    /// <summary>
+    /// When the Editor Window opened, we draw the textures and create reordarable list.
+    /// Currenty it only draws a texture for Header Title, but additional textures can be added.
+    /// 
+    /// </summary>
+    private void OnEnable()
     {
         InitializeTextures();
     }
@@ -76,7 +91,8 @@ public class LocalizationEditor : EditorWindow
     }
 
     /// <summary>
-    /// Draws the sections of Editor Window
+    /// Draws the sections of Editor Window.
+    /// We seperate all the main sections of Editor Window for easily editing the layouts.
     /// </summary>
     private void DrawLayouts()
     {
@@ -117,11 +133,15 @@ public class LocalizationEditor : EditorWindow
     private void HeaderSectionContent()
     {
         GUILayout.BeginArea(headerRect);
+
+        #region Editor Window Title
         GUIStyle headerTextGUIStyle = new GUIStyle();
         headerTextGUIStyle.alignment = TextAnchor.MiddleCenter;
         headerTextGUIStyle.fontStyle = FontStyle.BoldAndItalic;
         headerTextGUIStyle.normal.textColor = Color.white;
         EditorGUI.LabelField(headerRect, "LOCALIZATION EDITOR", headerTextGUIStyle);
+        #endregion
+
         GUILayout.EndArea();
     }
 
@@ -134,16 +154,19 @@ public class LocalizationEditor : EditorWindow
 
         GUILayout.BeginVertical();
 
+        #region Section Title
         GUIStyle languageCodesGUIStyle = new GUIStyle();
         languageCodesGUIStyle.alignment = TextAnchor.UpperLeft;
         languageCodesGUIStyle.fontStyle = FontStyle.Italic;
         languageCodesGUIStyle.normal.textColor = Color.white;
         EditorGUI.LabelField(new Rect(10,10, 0,0), "Add/Remove Language Codes", languageCodesGUIStyle);
+        #endregion
 
         GUILayout.Space(30);
 
         scrollPos = EditorGUILayout.BeginScrollView(scrollPos, GUILayout.Width(Screen.width-10), GUILayout.Height(150));
 
+        #region Selectable Language Codes List
         Color color_default = GUI.backgroundColor;
         Color color_selected = Color.grey;
 
@@ -166,6 +189,7 @@ public class LocalizationEditor : EditorWindow
 
             GUI.backgroundColor = color_default;
         }
+        #endregion
 
         EditorGUILayout.EndScrollView();
 
@@ -173,12 +197,15 @@ public class LocalizationEditor : EditorWindow
 
         EditorGUILayout.BeginHorizontal();
 
+        #region Language Codes List Controls
         languageCodeToAdd = EditorGUILayout.TextField("Language Code To Add:", languageCodeToAdd);
+
         if (GUILayout.Button("Add Language Code"))
             AddNewLanguageCode();
 
         if (GUILayout.Button("Remove Language Code"))
             RemoveLanguageCode();
+        #endregion
 
         EditorGUILayout.EndHorizontal();
 
@@ -197,19 +224,19 @@ public class LocalizationEditor : EditorWindow
         GUILayout.BeginArea(translationPanelRect);
 
         GUILayout.BeginVertical();
-        
+
+        #region Title
         GUIStyle translationPanelGUIStyle = new GUIStyle();
         translationPanelGUIStyle.alignment = TextAnchor.UpperLeft;
         translationPanelGUIStyle.fontStyle = FontStyle.Italic;
         translationPanelGUIStyle.normal.textColor = Color.white;
         EditorGUI.LabelField(new Rect(10, 10, 0, 0), "Manage Translations", translationPanelGUIStyle);
+        #endregion
 
         GUILayout.Space(30);
 
-        SerializedObject serializedObject = new SerializedObject(this);
-        SerializedProperty serializedProperty = serializedObject.FindProperty("translations");
-        EditorGUILayout.PropertyField(serializedProperty, true);
-        serializedObject.ApplyModifiedProperties();
+        reordarableList_Translations.DoLayoutList();
+        reordarableList_Translations.serializedProperty.serializedObject.ApplyModifiedProperties();
 
         GUILayout.EndVertical();
           
@@ -222,7 +249,8 @@ public class LocalizationEditor : EditorWindow
     private void LocalizationEditorButtonsSectionContent()
     {
         GUILayout.BeginArea(localizationEditorButtonsRect);
-        
+
+        #region Button Implementations
         if (GUILayout.Button("Save Translations"))
             Save();
 
@@ -231,10 +259,55 @@ public class LocalizationEditor : EditorWindow
 
         if (GUILayout.Button("Clear Translations"))
             CreateNewTranslation();
+        #endregion
 
         GUILayout.EndArea();
     }
 
+    #region Reordarable List Methods
+    private void DrawReordarableTranslationsList(Rect rect, int index, bool isActive, bool isFocused)
+    {
+        var element = reordarableList_Translations.serializedProperty.GetArrayElementAtIndex(index);
+        rect.y += 2;
+
+        SerializedProperty elementName = element.FindPropertyRelative("Text");
+        string elementTitle = string.IsNullOrEmpty(elementName.stringValue) ? "New Text To Translate" : elementName.stringValue;
+
+        Rect propertyFieldRect = new Rect(rect.x += 10, rect.y, Screen.width * 0.8f, EditorGUIUtility.singleLineHeight);
+        
+        EditorGUI.PropertyField(propertyFieldRect, element, new GUIContent(elementTitle), true);
+    }
+    private float ElementHeightCallback(int index)
+    {
+        float propertyHeight = EditorGUI.GetPropertyHeight(reordarableList_Translations.serializedProperty.GetArrayElementAtIndex(index), true);
+        float spacing = EditorGUIUtility.singleLineHeight / 2;
+
+        return propertyHeight + spacing;
+    }
+    private void OnAddCallback(ReorderableList reordarableList)
+    {
+        var index = reordarableList.serializedProperty.arraySize;
+        reordarableList.serializedProperty.arraySize++;
+        reordarableList.index = index;
+
+        var element = reordarableList.serializedProperty.GetArrayElementAtIndex(index);
+
+        TextTranslationsPair ttp = translations[translations.Count - 1];
+        foreach (string langCode in languageCodes)
+        {
+            LanguageCodeTranslationPair lctp = new LanguageCodeTranslationPair(langCode, "");
+            ttp.Translations.Add(lctp);
+        }
+
+        serializedObject.ApplyModifiedProperties();
+        serializedObject.Update();
+    }
+    #endregion
+
+    #region Add/Remove Translation Languages
+    /// <summary>
+    /// Adds the new language(with language code) to the translations if not exists.
+    /// </summary>
     private void AddNewLanguageCode()
     {
         if (languageCodeToAdd.Length <= 0)
@@ -245,15 +318,20 @@ public class LocalizationEditor : EditorWindow
 
         for(int i=0; i < translations.Count; i++)
         {
-            LanguageCodeTranslationPair newLangTranslationPair = new LanguageCodeTranslationPair();
-            newLangTranslationPair.LanguageCode = languageCodeToAdd;
+            LanguageCodeTranslationPair newLangTranslationPair = new LanguageCodeTranslationPair(languageCodeToAdd, "");
+            //newLangTranslationPair.LanguageCode = languageCodeToAdd;
             translations[i].Translations.Add(newLangTranslationPair);
         }
 
         languageCodes.Add(languageCodeToAdd);
         languageCodeToAdd = "";
+        
+        serializedObject.Update();
     }
 
+    /// <summary>
+    /// Removes the selected language(with language code) from the translations if exists.
+    /// </summary>
     private void RemoveLanguageCode()
     {
         if (languageCodeToRemove.Length <= 0)
@@ -276,8 +354,15 @@ public class LocalizationEditor : EditorWindow
 
         languageCodes.Remove(languageCodeToRemove);
         languageCodeToRemove = "";
-    }
 
+        serializedObject.Update();
+    }
+    #endregion
+
+    #region Save,Load and New Translation
+    /// <summary>
+    /// Converts the translations to JSON format and saves to selected directory.
+    /// </summary>
     private void Save()
     {
         if (translations == null)
@@ -291,7 +376,9 @@ public class LocalizationEditor : EditorWindow
         string translationsAsJson = JsonConvert.SerializeObject(translations);
         File.WriteAllText(savePath, translationsAsJson);
     }
-
+    /// <summary>
+    /// Converts selected text(Json) file to translations object and show it in the editor window.
+    /// </summary>
     private void Load()
     {
         string openPath = EditorUtility.OpenFilePanel("Open", "", ".txt");
@@ -307,11 +394,30 @@ public class LocalizationEditor : EditorWindow
         {
             languageCodes.Add(translations[0].Translations[i].LanguageCode);
         }
-    }
 
+        serializedObject = new SerializedObject(this);
+        serializedProperty = serializedObject.FindProperty("translations");
+        reordarableList_Translations = new ReorderableList(serializedObject, serializedProperty, true, false, true, true);
+        reordarableList_Translations.drawElementCallback = DrawReordarableTranslationsList;
+        reordarableList_Translations.elementHeightCallback += ElementHeightCallback;
+    }
+    /// <summary>
+    /// Creates a new translations.
+    /// </summary>
     private void CreateNewTranslation()
     {
         translations = new List<TextTranslationsPair>();
         languageCodes = new List<string>();
+
+        serializedObject = new SerializedObject(this);
+        serializedProperty = serializedObject.FindProperty("translations");
+        reordarableList_Translations = new ReorderableList(serializedObject, serializedProperty, true, false, true, true);
+        reordarableList_Translations.drawElementCallback = DrawReordarableTranslationsList;
+        reordarableList_Translations.elementHeightCallback += ElementHeightCallback;
     }
+    #endregion
 }
+//SerializedObject serializedObject = new SerializedObject(this);
+//SerializedProperty serializedProperty = serializedObject.FindProperty("translations");
+//EditorGUILayout.PropertyField(serializedProperty, true);
+//serializedObject.ApplyModifiedProperties();

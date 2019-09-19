@@ -30,8 +30,7 @@ public class LocalizationEditor : EditorWindow
     #region Translation Panel Section
     private Rect translationPanelRect;
     private ReorderableList reordarableList_Translations;
-
-    private AnimBool animBool;
+    
     private bool show;
     #endregion
 
@@ -274,11 +273,26 @@ public class LocalizationEditor : EditorWindow
         string elementTitle = string.IsNullOrEmpty(elementName.stringValue) ? "New Text To Translate" : elementName.stringValue;
 
         Rect propertyFieldRect = new Rect(rect.x += 10, rect.y, Screen.width * 0.8f, EditorGUIUtility.singleLineHeight);
-        
+
+        //GUILayout.BeginArea(propertyFieldRect);
+
+        //element.FindPropertyRelative("Text").stringValue = EditorGUILayout.TextField("Text To Translate:", element.FindPropertyRelative("Text").stringValue);
+        //show = EditorGUILayout.BeginFoldoutHeaderGroup(show, EditorGUILayout.TextField("Text To Translate:", element.FindPropertyRelative("Text").stringValue));
+       
+        //SerializedProperty translations = element.FindPropertyRelative("Translations");
+        //for (int i = 0; i < translations.arraySize; i++)
+        //{
+        //    var lctp = translations.GetArrayElementAtIndex(i);
+        //    lctp.FindPropertyRelative("Translation").stringValue = EditorGUILayout.TextField(lctp.FindPropertyRelative("LanguageCode").stringValue, lctp.FindPropertyRelative("Translation").stringValue);
+        //}
+        //EditorGUILayout.EndFoldoutHeaderGroup();
+
+        //GUILayout.EndArea();
         EditorGUI.PropertyField(propertyFieldRect, element, new GUIContent(elementTitle), true);
     }
     private float ElementHeightCallback(int index)
     {
+        //return (EditorGUIUtility.singleLineHeight*2) + (EditorGUIUtility.singleLineHeight * languageCodes.Count);
         float propertyHeight = EditorGUI.GetPropertyHeight(reordarableList_Translations.serializedProperty.GetArrayElementAtIndex(index), true);
         float spacing = EditorGUIUtility.singleLineHeight / 2;
 

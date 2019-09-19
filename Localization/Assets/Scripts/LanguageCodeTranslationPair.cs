@@ -5,8 +5,7 @@ using UnityEngine;
 [System.Serializable]
 public class LanguageCodeTranslationPair
 {
-
-    public readonly string LanguageCode;
+    public string LanguageCode;
     public string Translation;
 
     public LanguageCodeTranslationPair(string languageCode, string translation)

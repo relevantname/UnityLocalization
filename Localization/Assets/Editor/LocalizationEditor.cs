@@ -272,13 +272,13 @@ public class LocalizationEditor : EditorWindow
         SerializedProperty elementName = element.FindPropertyRelative("Text");
         string elementTitle = string.IsNullOrEmpty(elementName.stringValue) ? "New Text To Translate" : elementName.stringValue;
 
-        Rect propertyFieldRect = new Rect(rect.x += 10, rect.y, Screen.width * 0.8f, EditorGUIUtility.singleLineHeight);
+        Rect propertyFieldRect = new Rect(rect.x += 10, rect.y, Screen.width * 0.8f, 150);
 
         //GUILayout.BeginArea(propertyFieldRect);
 
         //element.FindPropertyRelative("Text").stringValue = EditorGUILayout.TextField("Text To Translate:", element.FindPropertyRelative("Text").stringValue);
         //show = EditorGUILayout.BeginFoldoutHeaderGroup(show, EditorGUILayout.TextField("Text To Translate:", element.FindPropertyRelative("Text").stringValue));
-       
+
         //SerializedProperty translations = element.FindPropertyRelative("Translations");
         //for (int i = 0; i < translations.arraySize; i++)
         //{
@@ -288,6 +288,15 @@ public class LocalizationEditor : EditorWindow
         //EditorGUILayout.EndFoldoutHeaderGroup();
 
         //GUILayout.EndArea();
+
+        //Rect propertyFieldRect = new Rect(rect.x += 10, rect.y + 50, Screen.width * 0.8f, EditorGUIUtility.singleLineHeight);
+        //GUILayout.BeginArea(propertyFieldRect);
+
+        //element.FindPropertyRelative("Text").stringValue = EditorGUILayout.TextField("Text To Translate:", element.FindPropertyRelative("Text").stringValue);
+        //EditorList.ShowList(element.FindPropertyRelative("Translations"));
+
+        //GUILayout.EndArea();
+        element.FindPropertyRelative("Text").stringValue = EditorGUILayout.TextField("Text To Translate:", element.FindPropertyRelative("Text").stringValue);
         EditorGUI.PropertyField(propertyFieldRect, element, new GUIContent(elementTitle), true);
     }
     private float ElementHeightCallback(int index)

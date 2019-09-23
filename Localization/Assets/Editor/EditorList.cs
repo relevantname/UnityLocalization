@@ -5,14 +5,17 @@ using UnityEngine;
 
 public static class EditorList
 {
-    public static void ShowList(SerializedProperty list)
+    public static void ShowList(Rect pos, SerializedProperty list)
     {
-        EditorGUILayout.PropertyField(list);
+        EditorGUI.PropertyField(pos, list);
         EditorGUI.indentLevel += 1;  // Giving an padding(indent) from left
         if (list.isExpanded) // For foldout feature
         {
             for (int i = 0; i < list.arraySize; i++)
-                EditorGUILayout.PropertyField(list.GetArrayElementAtIndex(i));
+            {
+                Rect listPos = new Rect(pos.x + 10, pos.y += EditorGUIUtility.singleLineHeight + 1, Screen.width * 0.9f, EditorGUIUtility.singleLineHeight);
+                EditorGUI.PropertyField(pos, list.GetArrayElementAtIndex(i));
+            }
         }
         EditorGUI.indentLevel -= 1;
     }

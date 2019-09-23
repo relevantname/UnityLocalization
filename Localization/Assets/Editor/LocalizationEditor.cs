@@ -268,40 +268,12 @@ public class LocalizationEditor : EditorWindow
     {
         var element = reordarableList_Translations.serializedProperty.GetArrayElementAtIndex(index);
         rect.y += 2;
-
-        SerializedProperty elementName = element.FindPropertyRelative("Text");
-        string elementTitle = string.IsNullOrEmpty(elementName.stringValue) ? "New Text To Translate" : elementName.stringValue;
-
-        Rect propertyFieldRect = new Rect(rect.x += 10, rect.y, Screen.width * 0.8f, 150);
-
-        //GUILayout.BeginArea(propertyFieldRect);
-
-        //element.FindPropertyRelative("Text").stringValue = EditorGUILayout.TextField("Text To Translate:", element.FindPropertyRelative("Text").stringValue);
-        //show = EditorGUILayout.BeginFoldoutHeaderGroup(show, EditorGUILayout.TextField("Text To Translate:", element.FindPropertyRelative("Text").stringValue));
-
-        //SerializedProperty translations = element.FindPropertyRelative("Translations");
-        //for (int i = 0; i < translations.arraySize; i++)
-        //{
-        //    var lctp = translations.GetArrayElementAtIndex(i);
-        //    lctp.FindPropertyRelative("Translation").stringValue = EditorGUILayout.TextField(lctp.FindPropertyRelative("LanguageCode").stringValue, lctp.FindPropertyRelative("Translation").stringValue);
-        //}
-        //EditorGUILayout.EndFoldoutHeaderGroup();
-
-        //GUILayout.EndArea();
-
-        //Rect propertyFieldRect = new Rect(rect.x += 10, rect.y + 50, Screen.width * 0.8f, EditorGUIUtility.singleLineHeight);
-        //GUILayout.BeginArea(propertyFieldRect);
-
-        //element.FindPropertyRelative("Text").stringValue = EditorGUILayout.TextField("Text To Translate:", element.FindPropertyRelative("Text").stringValue);
-        //EditorList.ShowList(element.FindPropertyRelative("Translations"));
-
-        //GUILayout.EndArea();
-        element.FindPropertyRelative("Text").stringValue = EditorGUILayout.TextField("Text To Translate:", element.FindPropertyRelative("Text").stringValue);
-        EditorGUI.PropertyField(propertyFieldRect, element, new GUIContent(elementTitle), true);
+        
+        Rect propertyFieldRect = new Rect(rect.x += 10, rect.y, Screen.width * 0.8f, EditorGUIUtility.singleLineHeight);
+        EditorGUI.PropertyField(propertyFieldRect, element, false);
     }
     private float ElementHeightCallback(int index)
     {
-        //return (EditorGUIUtility.singleLineHeight*2) + (EditorGUIUtility.singleLineHeight * languageCodes.Count);
         float propertyHeight = EditorGUI.GetPropertyHeight(reordarableList_Translations.serializedProperty.GetArrayElementAtIndex(index), true);
         float spacing = EditorGUIUtility.singleLineHeight / 2;
 
@@ -342,7 +314,6 @@ public class LocalizationEditor : EditorWindow
         for(int i=0; i < translations.Count; i++)
         {
             LanguageCodeTranslationPair newLangTranslationPair = new LanguageCodeTranslationPair(languageCodeToAdd, "");
-            //newLangTranslationPair.LanguageCode = languageCodeToAdd;
             translations[i].Translations.Add(newLangTranslationPair);
         }
 
@@ -440,7 +411,3 @@ public class LocalizationEditor : EditorWindow
     }
     #endregion
 }
-//SerializedObject serializedObject = new SerializedObject(this);
-//SerializedProperty serializedProperty = serializedObject.FindProperty("translations");
-//EditorGUILayout.PropertyField(serializedProperty, true);
-//serializedObject.ApplyModifiedProperties();

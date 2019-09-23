@@ -12,9 +12,8 @@ public class LanguageCodeTranslationPairDrawer : PropertyDrawer
         EditorGUI.BeginProperty(position, label, property);
 
         position = EditorGUI.PrefixLabel(position, GUIUtility.GetControlID(FocusType.Passive), label);
-
         EditorGUI.indentLevel = 0;
-        var textFieldRect = new Rect(position.x + 40, position.y, position.width - 40, position.height);
+        var textFieldRect = new Rect(position.x + 10, position.y, position.width, position.height);
         EditorGUI.PropertyField(textFieldRect, property.FindPropertyRelative("Translation"), GUIContent.none);
         
         EditorGUI.EndProperty();

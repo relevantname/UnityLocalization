@@ -15,23 +15,19 @@ public class LocalizationEditor : EditorWindow
     private Color headerColor = new Color(0, 74.0f / 255.0f, 145.0f / 255.0f, 255.0f / 255.0f);
     #endregion
 
-    //private Texture2D testtexture;
-    //private Color testtextureColor = Color.green;
-
     #region Language Codes Section Properties
     private Rect languageCodesRect;
     private List<string> languageCodes;
     private string languageCodeToAdd = "";
     private string languageCodeToRemove = "";
-    private Vector2 scrollPos;
+    private Vector2 languageCodesSectionScrollPos;
     int selectedIndex = -1;
     #endregion
 
     #region Translation Panel Section
     private Rect translationPanelRect;
     private ReorderableList reordarableList_Translations;
-    
-    private bool show;
+    private Vector2 translationPanelScrollPos;
     #endregion
 
     #region LocalizationEditor Buttons Section Properties(Save, Load, Clear)
@@ -163,7 +159,7 @@ public class LocalizationEditor : EditorWindow
 
         GUILayout.Space(30);
 
-        scrollPos = EditorGUILayout.BeginScrollView(scrollPos, GUILayout.Width(Screen.width-10), GUILayout.Height(150));
+        languageCodesSectionScrollPos = EditorGUILayout.BeginScrollView(languageCodesSectionScrollPos, GUILayout.Width(Screen.width-10), GUILayout.Height(150));
 
         #region Selectable Language Codes List
         Color color_default = GUI.backgroundColor;
@@ -234,8 +230,12 @@ public class LocalizationEditor : EditorWindow
 
         GUILayout.Space(30);
 
+        translationPanelScrollPos = EditorGUILayout.BeginScrollView(translationPanelScrollPos, GUILayout.Width(Screen.width - 10), GUILayout.Height(450));
+
         reordarableList_Translations.DoLayoutList();
         reordarableList_Translations.serializedProperty.serializedObject.ApplyModifiedProperties();
+
+        EditorGUILayout.EndScrollView();
 
         GUILayout.EndVertical();
           
@@ -362,7 +362,7 @@ public class LocalizationEditor : EditorWindow
         if (translations == null)
             return;
 
-        string savePath = EditorUtility.SaveFilePanel("Save", "", "lang", ".txt");
+        string savePath = EditorUtility.SaveFilePanel("Save", "", "lang", "txt");
 
         if (string.IsNullOrEmpty(savePath))
             return;

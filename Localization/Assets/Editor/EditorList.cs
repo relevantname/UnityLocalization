@@ -7,7 +7,7 @@ public static class EditorList
 {
     public static void ShowList(Rect pos, SerializedProperty list)
     {
-        EditorGUI.PropertyField(pos, list);
+        EditorGUI.PropertyField(pos, list); // Showing Property without list elements.
         EditorGUI.indentLevel += 1;  // Giving an padding(indent) from left
         if (list.isExpanded) // For foldout feature
         {
